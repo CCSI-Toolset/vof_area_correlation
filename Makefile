@@ -1,23 +1,17 @@
 # A simple makefile for packaging the:
 # Report on liquid film flow over an inclined plate: effect of solvent properties
-VERSION    := 2014.10.00
+VERSION    := $(shell git describe --tags --dirty )
 PRODUCT    := VOF Area Correlation
 PROD_SNAME := VOF_Area_Correlation
-LICENSE    := CCSI_TE_LICENSE_$(PROD_SNAME).txt
+LICENSE    := LICENSE.md
 PKG_DIR    := CCSI_$(PROD_SNAME)_$(VERSION)
 PACKAGE    := $(PKG_DIR).zip
-
-# Where Jenkins should checkout ^/projects/common/trunk/
-COMMON := .ccsi_common
-
-LEGAL_DOCS := LEGAL \
-           CCSI_TE_LICENSE.txt
 
 PAYLOAD := docs/*.pdf \
      FluentFilmCase \
      FluentRivuletCase \
      OpenFoamCase \
-     LEGAL \
+     README.md \
      $(LICENSE)
 
 # Get just the top part (not dirname) of each entry so cp -r does the right thing
@@ -46,17 +40,7 @@ $(PACKAGE): $(PAYLOAD)
 	@cp -r $(PAYLOAD_TOPS) $(PKG_DIR)
 	@zip -qrX $(PACKAGE) $(PKG_PAYLOAD)
 	@$(MD5BIN) $(PACKAGE)
-	@rm -rf $(PKG_DIR) $(LICENSE) $(LEGAL_DOCS)
-
-$(LICENSE): CCSI_TE_LICENSE.txt
-	@sed "s/\[SOFTWARE NAME \& VERSION\]/$(PRODUCT) v.$(VERSION)/" < CCSI_TE_LICENSE.txt > $(LICENSE)
-
-$(LEGAL_DOCS):
-	@if [ -d $(COMMON) ]; then \
-	  cp $(COMMON)/$@ .; \
-	else \
-	  svn -q export ^/projects/common/trunk/$@; \
-	fi
+	@rm -rf $(PKG_DIR)
 
 clean:
-	@rm -rf $(PACKAGE) $(PKG_DIR) $(LICENSE) $(LEGAL_DOCS)
+	@rm -rf $(PACKAGE) $(PKG_DIR) *.zip
